@@ -1,0 +1,205 @@
+html, body {
+    height: 100%;
+    margin: 0;
+    background-color: black;
+    color: white;
+    font-family: 'Inter', sans-serif;
+    scrollbar-width: none;
+}
+
+.container {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    height: 100%;
+}
+
+.arrivals {
+    width: 97%;
+    margin: 1em;
+    padding-right: 1em;
+}
+
+.card {
+    border-radius: 3px;
+    padding: 10px;
+    padding-bottom: 2em;
+    padding-top: 2em;
+    margin-bottom: 10px;
+    display: grid;
+    grid-template-columns: .5fr 4fr 1fr 1fr;
+    gap: 50px;
+    align-content: center;
+    height: 10%;
+    width:100%;
+}
+
+.arrival {
+    background-color: rgb(29, 29, 29);
+}
+
+.header {
+    background-color: rgb(54, 54, 54);
+    grid-template-columns: .5fr 4fr 1fr .5fr;
+}
+
+.warning {
+    background-color: rgb(250, 244, 214);
+    color: black;
+    height:auto;
+    grid-template-columns: .5fr 6fr;
+}
+
+.destination {
+    font-size: 5em;
+    font-weight: 600;
+}
+
+.warning-text {
+    font-size: 3em;
+    font-weight: 600;
+}
+
+.arrival-time {
+    font-size: 5em;
+    font-weight: 600;
+}
+
+.min::after {
+    content: "min";
+    color: white;
+    font-size: .4em;
+    font-weight: 600;
+    margin-left: 1em;
+}
+
+.car {
+    font-size: 5em;
+    font-weight: 600;
+}
+
+.line {
+    width: 6em;
+    height: 6em;
+    border-radius: 50%;
+}
+
+.metro-logo {
+    width: 5em;
+    height: 6em;
+    border-radius: 5%;
+    background-color: white;
+    /* background-image: url(WMATA_Metro_Logo.svg);
+    background-size: contain;
+    background-repeat: no-repeat; */
+}
+
+.line::after {
+    font-weight: bold;
+    position: absolute;
+    font-size: 3.5em;
+}
+
+.metro-logo::after {
+    content: "M";
+    color: rgb(54, 54, 54);
+    margin-left: .05em;
+    font-weight: bold;
+    position: absolute;
+    font-size: 5em;
+}
+
+.rd {
+    background-color: rgb(200, 15, 45);
+}
+
+.rd::after {
+    content: "R";
+    color: white;
+    margin-top: .25em; 
+    margin-left: .52em;
+}
+
+.or {
+    background-color: rgb(237, 139, 0);
+}
+
+.or::after {
+    content: "O";
+    color: black;
+    margin-top: .25em; 
+    margin-left: .46em;
+}
+
+.yl {
+    background-color: rgb(255, 209, 0);
+}
+
+.yl::after {
+    content: "Y";
+    color: black;
+    margin-top: .25em; 
+    margin-left: .5em;
+}
+
+.gr {
+    background-color: rgb(0, 177, 64);
+}
+
+.gr::after {
+    content: "G";
+    color: white;
+    margin-top: .25em; 
+    margin-left: .48em;
+}
+
+.bl {
+    background-color: rgb(0, 156, 222);
+}
+
+.bl::after {
+    content: "B";
+    color: white;
+    margin-top: .25em; 
+    margin-left: .55em;
+}
+
+.sv {
+    background-color: rgb(145, 157, 157);
+}
+
+.sv::after {
+    content: "S";
+    color: black;
+    margin-top: .25em; 
+    margin-left: .52em;
+}
+
+.no,.-- {
+    background-color: rgb(45, 46, 46); 
+}
+
+.no::after {
+    content: "?";
+    color: white;
+    margin-top: .25em; 
+    margin-left: .58em;
+}
+
+.--::after {
+    content: "?";
+    color: white;
+    margin-top: .25em; 
+    margin-left: .58em;
+}
+
+.alert {
+    background-color: black;
+}
+
+.alert::after {
+    content: "!";
+    color: white;
+    margin-top: .25em; 
+    margin-left: .72em;
+}
