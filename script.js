@@ -10,8 +10,92 @@ function sleep(ms) {
 const logo = document.querySelector('.metro-logo');
 logo.addEventListener('click', () => {
     localStorage.clear();
-    alert("Local storage cleared. Please refresh the page and enter your API key and station code(s) again.");
+    alert("Local storage cleared. Please reenter your API key and station code(s).");
+    location.reload(); 
 });
+
+// Function to check if the provided station code(s) are valid by making a test request to the WMATA API
+async function checkStationCodes(stationCodes) {
+    const response = await fetch(`https://api.wmata.com/StationPrediction.svc/json/GetPrediction/${stationCodes}`, {
+        method: 'GET',
+        // Request headers
+        headers: {
+            'Cache-Control': 'no-cache',
+            'api_key': api_key}
+    })
+    if (response.ok) {
+        return true;
+    }
+    return false;
+}
+
+// Function to check for station code(s) in local storage, if not present prompt the user to enter them and save them to local storage for future use
+async function getStationCodes() {
+    if (localStorage.getItem('stations') !== null) {
+        stations = localStorage.getItem('stations');
+        // Initial data fetch
+        getMetroData(stations);
+    } else {
+        let promptedStations = prompt("Please enter the station code(s) you want to track (e.g., 'A01' for Metro Center, or 'all' for all stations. Multiple stations can be entered separated by commas.):");
+        if (promptedStations) {
+            stations = promptedStations;
+            const isValid = await checkStationCodes(stations);
+            if (!isValid) {
+                alert("Invalid station code(s). Please enter valid station code(s).");
+                location.reload(); 
+            } else {
+                localStorage.setItem('stations', stations);
+                // Initial data fetch
+                getMetroData(stations);
+            }
+        } else {
+            alert("No station code(s) entered. Please enter valid station code(s).");
+            location.reload(); 
+        }
+    }
+
+}    
+
+// Function to check if the provided API key is valid by making a test request to the WMATA API
+async function checkAPI(api_key) {
+    const response = await fetch('https://api.wmata.com/Misc/Validate', {
+        method: 'GET',
+        // Request headers
+        headers: {
+            'Cache-Control': 'no-cache',
+            'api_key': api_key}
+    })
+    if (response.ok) {
+        return true;
+    }
+    return false;
+}
+
+// Check for API key and station code(s) in local storage, if not present prompt the user to enter them and save them to local storage for future use
+async function getAPIKey() {
+    if (localStorage.getItem('api_key') !== null) {
+        api_key = localStorage.getItem('api_key');
+        // Get station codes from user
+        getStationCodes();
+    } else {
+        let promptedKey = prompt("Please enter your WMATA API key:");
+        if (promptedKey) {
+            api_key = promptedKey;
+            const isValid = await checkAPI(api_key);
+            if (!isValid) {
+                alert("Invalid API key. Please enter a valid WMATA API key.");
+                location.reload(); 
+            } else {
+                localStorage.setItem('api_key', api_key);
+                // Get station codes from user
+                getStationCodes();
+            }
+        } else {
+            alert("No API key entered. Please enter a valid WMATA API key to use the Metro Tracker.");
+            location.reload(); 
+        }
+    }
+}
 
 // Function to fetch arrival data and create arrival cards
 async function getMetroData(stationCode) {
@@ -110,33 +194,8 @@ async function getAlerts() {
     getMetroData(stations);
 }
 
-// Check for API key and station code(s) in local storage, if not present prompt the user to enter them and save them to local storage for future use
-if (localStorage.getItem('api_key') !== null) {
-    api_key = localStorage.getItem('api_key');
-} else {
-    let promptedKey = prompt("Please enter your WMATA API key:");
-    if (promptedKey) {
-        api_key = promptedKey;
-        localStorage.setItem('api_key', api_key);
-    } else {
-        alert("No API key entered. Please refresh the page and enter a valid WMATA API key to use the Metro Tracker.");
-    }
-}
-
-if (localStorage.getItem('stations') !== null) {
-    stations = localStorage.getItem('stations');
-} else {
-    let promptedStations = prompt("Please enter the station code(s) you want to track (e.g., 'A01' for Metro Center, or 'all' for all stations. Multiple stations can be entered separated by commas.):");
-    if (promptedStations) {
-        stations = promptedStations;
-        localStorage.setItem('stations', stations);
-    } else {
-        alert("No station code(s) entered. Please refresh the page and enter valid station code(s) to track.");
-    }
-}
-
-// Initial data fetch
-getMetroData(stations);
+// Initial function call to get the API key and station code(s) from the user and start fetching data
+getAPIKey();
 
 // Refresh the train data every 15 seconds and pull the alert data every 3 minutes
 const trainRefreshInterval = setInterval(() => getMetroData(stations), 15000);

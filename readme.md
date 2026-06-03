@@ -5,5 +5,4 @@ This project replicates the modern next train signs that are on the platforms wi
 It requires the user to input an API key and station code(s), which then gets stored in the browser cache.
 
 ### Future Enhancements:
-- Test that API key and station input is valid
 - Allow user to select stations via search and picklist
