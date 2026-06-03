@@ -165,7 +165,7 @@ async function getAlerts() {
             'api_key': api_key}
     })
     const data = await response.json();
-    for (let alert of data[0].entities) {
+    for (let alert of data) {
         // Set the limit to 3 to prioritize alert visibility when an alert is present, and refresh the arrival data to reflect the new limit
         limit = 3;
         getMetroData(stations);
@@ -181,7 +181,7 @@ async function getAlerts() {
         destination.classList.add('warning-text');
 
         // Set the content of the elements
-        destination.textContent = alert.alert.descriptionText.translations[0].text;
+        destination.textContent = alert.entities[0].alert.descriptionText.translations[0].text;
 
         // Append the elements to the warning card
         warningCard.appendChild(line);

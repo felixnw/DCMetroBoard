@@ -7,4 +7,8 @@ It requires the user to input an API key and station code(s), which then gets st
 Clicking the "M" logo in the top left corner resets the API Key and Station code entries and allows the user to reenter them.
 
 ### Future Enhancements:
-- Allow user to select stations via search and picklist
+- Allow user to select stations via search and picklists
+- Allow user to set max number of trains displayed
+- Allow user to set minimum minutes
+- Set sleep hours
+- Take LinesAffected into account when showing alerts
