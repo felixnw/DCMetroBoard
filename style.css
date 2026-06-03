@@ -4,36 +4,36 @@ html, body {
     background-color: black;
     color: white;
     font-family: 'Inter', sans-serif;
+    font-weight: 600;
     scrollbar-width: none;
 }
 
-.container {
-    display: flex;
-    flex-direction: row;
-    justify-content: center;
-    height: 100%;
+.arrivals {
+    margin: 1em;
+    display: grid;
+    grid-template-columns: .5fr 4fr 1fr 1fr;
 }
 
-.arrivals {
-    width: 97%;
-    margin: 1em;
-    padding-right: 1em;
+.warning-cards, .arrival-cards {
+    display: grid;
+    grid-column: span 4;
+    grid-template-columns: subgrid;
 }
 
 .card {
-    border-radius: 3px;
-    padding: 10px;
-    padding-bottom: 2em;
-    padding-top: 2em;
-    margin-bottom: 10px;
-    display: grid;
-    grid-template-columns: .5fr 4fr 1fr 1fr;
-    gap: 50px;
-    align-content: center;
-    height: 10%;
+    height: 4.5em;
     width: 98%;
+    padding-top: 2em;
+    padding-bottom: 2em;
     padding-left: 1.25em;
     padding-right: 1.25em;
+    margin-bottom: 20px;
+    border-radius: 3px;
+    align-content: center;
+    display: grid;
+    grid-template-columns: subgrid;
+    grid-column: span 4;
+    gap: 50px;
 }
 
 .arrival {
@@ -42,42 +42,38 @@ html, body {
 
 .header {
     background-color: rgb(70, 70, 70);
-    grid-template-columns: .5fr 4fr 1fr 1fr;
 }
 
 .warning {
     background-color: rgb(250, 244, 214);
     color: black;
-    height:auto;
-    grid-template-columns: .5fr 6fr;
+    height: auto;
+    grid-column: span 4;
+    display: grid;
+    grid-template-columns: subgrid;
 }
 
 .destination {
     font-size: 5em;
-    font-weight: 600;
 }
 
 .warning-text {
     font-size: 3em;
-    font-weight: 600;
+    grid-column: span 3;
 }
 
 .arrival-time {
     font-size: 5em;
-    font-weight: 600;
 }
 
 .min::after {
     content: "min";
-    color: white;
     font-size: .4em;
-    font-weight: 600;
     margin-left: .5em;
 }
 
 .car {
     font-size: 5em;
-    font-weight: 600;
 }
 
 .line {
