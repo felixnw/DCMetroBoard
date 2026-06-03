@@ -7,4 +7,3 @@ It requires the user to input an API key and station code(s), which then gets st
 ### Future Enhancements:
 - Test that API key and station input is valid
 - Allow user to select stations via search and picklist
-- Perfect spacing/styling
