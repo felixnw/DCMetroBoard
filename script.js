@@ -129,7 +129,12 @@ async function getMetroData(stationCode) {
             
 
             // Set the content of the elements
-            destination.textContent = train.Destination;
+            if (train.Destination === 'ssenger') {
+                destination.textContent = train.DestinationName;
+            } else {
+                destination.textContent = train.Destination;
+            }
+            // destination.textContent = train.Destination;
             car.textContent = train.Car;
             arrivalTime.textContent = train.Min;
 
