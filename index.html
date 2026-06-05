@@ -32,7 +32,8 @@
         <h2>Settings</h2>
         <p>A <a href="https://developer.wmata.com/">WMATA API key</a> is required for this application to receive live train data.</p>
         <label for="api-key">API Key:</label>
-        <input type="text" id="api-key" name="api-key" placeholder="Enter your WMATA API key">
+        <input type="text" id="api-key" name="api-key" autocomplete="off" placeholder="Enter your WMATA API key">
+        <button id="save-api">Save API Key</button>
         <h3>Stations</h3>
         <p>Select one or more stations to view upcoming trains for.</p>
         <label for="search">Station Search:</label>

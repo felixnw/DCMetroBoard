@@ -4,6 +4,10 @@ let limit = 4;
 // Variable to hold list of all the stations
 let allStations;
 
+// Variables to hold refresh interval IDs
+let trainRefreshInterval;
+let alertRefreshInterval;
+
 // Function to create a delay for a specified number of milliseconds
 function sleep(ms) {
   return new Promise(resolve => setTimeout(resolve, ms));
@@ -18,11 +22,11 @@ logo.addEventListener('click', () => {
     populateStationList();
 });
 
-// On click, get data on refreshed stations, then close settings dialog
-const closeModalBtn = document.querySelector('#close-settings');
-closeModalBtn.addEventListener('click', async () => {
+// Check if API key is valid when attempt to save
+const apiBtn = document.querySelector('#save-api');
+apiBtn.addEventListener('click', async () => {
     let apiCheck;
-    const api_key = document.getElementById("api-key").value;
+    let api_key = document.getElementById("api-key").value;
     try {
         apiCheck = await checkAPI(api_key);
     } catch (error) {
@@ -31,22 +35,40 @@ closeModalBtn.addEventListener('click', async () => {
 
     if (apiCheck) {
         localStorage.setItem('api_key', api_key);
+        populateStationList(document.getElementById("search").value);
+
     } else {
-            alert("Invalid API key entered. Please enter a valid WMATA API key to use the Metro Tracker.");
+        alert("Invalid API key entered. Please enter a valid WMATA API key to use the Metro Tracker.");
     }
-    
-    let stationCheck;
-    const stationCodes = document.getElementById("api-key").value;
+});
+
+// On click, confirm that keys are valid, get data on refreshed stations, then close settings dialog
+const closeModalBtn = document.querySelector('#close-settings');
+closeModalBtn.addEventListener('click', async () => {
+    let apiCheck;
     try {
-        stationCheck = await checkStationCodes(stationCodes)
+        apiCheck = await checkAPI(localStorage.getItem('api_key'));
+    } catch (error) {
+        console.error('Error calling API Key verification.');
+    }
+
+    if (!apiCheck) {
+        alert("Invalid API key entered. Please enter a valid WMATA API key to use the Metro Tracker.");
+        return;
+    }
+
+    let stationCheck;
+    try {
+        stationCheck = await checkStationCodes(localStorage.getItem('stations'))
     } catch {
         console.error('Error calling Station Code verification.');
     }
 
-    if (stationCheck) {
+    if (stationCheck && apiCheck) {
         getMetroData(localStorage.getItem('stations'));
         const dialog = document.querySelector("dialog");
         dialog.close();
+        startApp();
     } else {
         alert("No stations selected. Please select at least one station.");
     }
@@ -70,7 +92,7 @@ searchBox.addEventListener('input', (event) => {
 const stationList = document.querySelector('#station-list');
 stationList.addEventListener('change', function(event) {
     if (event.target.checked) {
-        let selectedStations = localStorage.getItem('stations').split(",");
+        let selectedStations = localStorage.getItem('stations')?.split(",") ?? [];
         selectedStations.push(event.target.value);
         localStorage.setItem('stations', selectedStations.toString().replace(/^,/, ''));
         populateStationList(document.getElementById("search").value);
@@ -87,7 +109,7 @@ async function populateStationList(filter) {
         try {
             allStations = await getStations();
         } catch (error) {
-            console.error('Failed to get allStations.')
+            console.error('Failed to get allStations.', error);
         }
         allStations.sort((a, b) => a.Name.localeCompare(b.Name));
     }
@@ -104,7 +126,7 @@ async function populateStationList(filter) {
         const selectedList = document.createElement('p');
         let selectedName = [];
         let selectedLines = [];
-        for (let selectedStation of localStorage.getItem('stations').split(",")) {
+        for (let selectedStation of localStorage.getItem('stations')?.split(",") ?? []) {
             const match = filteredStations.find(item => item.Code === selectedStation);
             selectedName.push(match?.Name);
             // Get each lineCode and add it to the array if not null
@@ -125,7 +147,7 @@ async function populateStationList(filter) {
             const stationCheckbox = document.createElement('input');
             stationCheckbox.type = "checkbox";
             stationCheckbox.value = station.Code;
-            if (localStorage.getItem('stations').includes(station.Code)){
+            if (localStorage.getItem('stations')?.includes(station.Code)){
                 stationCheckbox.checked = true;
             }
             stationCard.appendChild(stationCheckbox);
@@ -149,7 +171,7 @@ async function getStations() {
         // Request headers
         headers: {
             'Cache-Control': 'no-cache',
-            'api_key': api_key}
+            'api_key': localStorage.getItem('api_key')}
     })
     const stations = await response.json();
     if (response.ok) {
@@ -180,23 +202,12 @@ async function checkStationCodes(stationCodes) {
         // Request headers
         headers: {
             'Cache-Control': 'no-cache',
-            'api_key': api_key}
+            'api_key': localStorage.getItem('api_key')}
     })
     if (response.ok) {
         return true;
     }
     return false;
-}
-
-// Check for API key and station code(s) in local storage, if not present open the settings dialog.
-async function getAPIKey() {
-    if (localStorage.getItem('api_key') !== null && localStorage.getItem('stations') !== null) {
-        api_key = localStorage.getItem('api_key');
-        stations = localStorage.getItem('stations');
-    } else {
-        const dialog = document.querySelector("dialog");
-        dialog.showModal();
-    }
 }
 
 // Function to fetch arrival data and create arrival cards
@@ -206,7 +217,7 @@ async function getMetroData(stationCode) {
         // Request headers
         headers: {
             'Cache-Control': 'no-cache',
-            'api_key': api_key}
+            'api_key': localStorage.getItem('api_key')}
     })
     .then(response => {
         return response.json();
@@ -264,7 +275,7 @@ async function getAlerts() {
         // Request headers
         headers: {
             'Cache-Control': 'no-cache',
-            'api_key': api_key}
+            'api_key': localStorage.getItem('api_key')}
     })
     const data = await response.json();
     for (let alert of data.Incidents) {
@@ -273,7 +284,7 @@ async function getAlerts() {
 
             // Set the limit to 3 to prioritize alert visibility when an alert is present, and refresh the arrival data to reflect the new limit
             limit = 3;
-            getMetroData(stations);
+            getMetroData(localStorage.getItem('stations'));
             
             // Create the warning card elements
             const warningCard = document.createElement('div');
@@ -302,13 +313,25 @@ async function getAlerts() {
 
     // Set the limit back after processing alerts and refresh the arrival data to reflect the new limit
     limit = 4;
-    getMetroData(stations);
+    getMetroData(localStorage.getItem('stations'));
 }
 
-// Initial function call to get the API key and station code(s) from the user and start fetching data
-getAPIKey();
-getAlerts();
+function startApp(){
+    // Clear existing intervals
+    clearInterval(trainRefreshInterval);
+    clearInterval(alertRefreshInterval);
+    // Initial function call to get the API key and station code(s) from the user and start fetching data
+    getMetroData(localStorage.getItem('stations'));
+    getAlerts();
+    // Refresh the train data every 15 seconds and pull the alert data every 3 minutes
+    trainRefreshInterval = setInterval(() => getMetroData(localStorage.getItem('stations')), 15000);
+    alertRefreshInterval = setInterval(() => getAlerts(), 180000);
+}
 
-// Refresh the train data every 15 seconds and pull the alert data every 3 minutes
-const trainRefreshInterval = setInterval(() => getMetroData(stations), 15000);
-const alertRefreshInterval = setInterval(() => getAlerts(), 180000);
+
+if (localStorage.getItem('api_key') && localStorage.getItem('stations')) {
+    startApp();
+} else {
+    const dialog = document.querySelector("dialog");
+    dialog.showModal();
+}
