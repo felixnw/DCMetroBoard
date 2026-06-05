@@ -1,6 +1,9 @@
 // Set initial limit of arrival cards. It will be reduced to 3 when an alert is present to prioritize alert visibility
 let limit = 4;
 
+// Variable to hold list of all the stations
+let allStations;
+
 // Function to create a delay for a specified number of milliseconds
 function sleep(ms) {
   return new Promise(resolve => setTimeout(resolve, ms));
@@ -9,52 +12,151 @@ function sleep(ms) {
 // Add click event listener to the logo to clear local storage and prompt the user to refresh the page and enter their API key and station code(s) again
 const logo = document.querySelector('.metro-logo');
 logo.addEventListener('click', () => {
+    const dialog = document.querySelector("dialog");
+    dialog.showModal();
+    document.getElementById("api-key").value = localStorage.getItem('api_key');
+    populateStationList();
+});
+
+// On click, get data on refreshed stations, then close settings dialog
+const closeModalBtn = document.querySelector('#close-settings');
+closeModalBtn.addEventListener('click', async () => {
+    let apiCheck;
+    const api_key = document.getElementById("api-key").value;
+    try {
+        apiCheck = await checkAPI(api_key);
+    } catch (error) {
+        console.error('Error calling API Key verification.');
+    }
+
+    if (apiCheck) {
+        localStorage.setItem('api_key', api_key);
+    } else {
+            alert("Invalid API key entered. Please enter a valid WMATA API key to use the Metro Tracker.");
+    }
+    
+    let stationCheck;
+    const stationCodes = document.getElementById("api-key").value;
+    try {
+        stationCheck = await checkStationCodes(stationCodes)
+    } catch {
+        console.error('Error calling Station Code verification.');
+    }
+
+    if (stationCheck) {
+        getMetroData(localStorage.getItem('stations'));
+        const dialog = document.querySelector("dialog");
+        dialog.close();
+    } else {
+        alert("No stations selected. Please select at least one station.");
+    }
+});
+
+// On click, clear local storage
+const clearStorageBtn = document.querySelector('#clear-storage');
+clearStorageBtn.addEventListener('click', () => {
     localStorage.clear();
     alert("Local storage cleared. Please reenter your API key and station code(s).");
     location.reload(); 
 });
 
-// Function to check if the provided station code(s) are valid by making a test request to the WMATA API
-async function checkStationCodes(stationCodes) {
-    const response = await fetch(`https://api.wmata.com/StationPrediction.svc/json/GetPrediction/${stationCodes}`, {
+// Event handler for station search box
+const searchBox = document.querySelector('#search');
+searchBox.addEventListener('input', (event) => {
+    populateStationList(event.target.value);
+});
+
+// Event handler to show list of selected stations in settings
+const stationList = document.querySelector('#station-list');
+stationList.addEventListener('change', function(event) {
+    if (event.target.checked) {
+        let selectedStations = localStorage.getItem('stations').split(",");
+        selectedStations.push(event.target.value);
+        localStorage.setItem('stations', selectedStations.toString().replace(/^,/, ''));
+        populateStationList(document.getElementById("search").value);
+    } else {
+        const selectedStations = localStorage.getItem('stations').split(",").filter(item => item !== event.target.value);
+        localStorage.setItem('stations', selectedStations.join(','));
+        populateStationList(document.getElementById("search").value);
+    }
+});
+
+async function populateStationList(filter) {
+    let filteredStations;
+    if (!allStations) {
+        try {
+            allStations = await getStations();
+        } catch (error) {
+            console.error('Failed to get allStations.')
+        }
+        allStations.sort((a, b) => a.Name.localeCompare(b.Name));
+    }
+
+    if (allStations) {
+        document.querySelector('#station-list').replaceChildren();
+        if (filter) {
+            filteredStations = allStations.filter(station => station.Name.toLowerCase().includes(filter.toLowerCase()));
+        } else {
+            filteredStations = allStations;
+        }
+
+        // Create list of selected stations and display that in the settings dialog. Additionally, store the line colors for incident filtering.
+        const selectedList = document.createElement('p');
+        let selectedName = [];
+        let selectedLines = [];
+        for (let selectedStation of localStorage.getItem('stations').split(",")) {
+            const match = filteredStations.find(item => item.Code === selectedStation);
+            selectedName.push(match?.Name);
+            // Get each lineCode and add it to the array if not null
+            match?.LineCode1 != null && selectedLines.push(match?.LineCode1);
+            match?.LineCode2 != null && selectedLines.push(match?.LineCode2);
+            match?.LineCode3 != null && selectedLines.push(match?.LineCode3);
+            match?.LineCode4 != null && selectedLines.push(match?.LineCode4);
+        }
+        localStorage.setItem('lines', selectedLines)
+        selectedList.textContent = "Selected Stations: " + selectedName.join(', ');
+        document.querySelector('#station-list').appendChild(selectedList);
+
+        for (let station of filteredStations) {
+
+            const stationCard = document.createElement('div');
+            stationCard.classList.add('station-card');
+
+            const stationCheckbox = document.createElement('input');
+            stationCheckbox.type = "checkbox";
+            stationCheckbox.value = station.Code;
+            if (localStorage.getItem('stations').includes(station.Code)){
+                stationCheckbox.checked = true;
+            }
+            stationCard.appendChild(stationCheckbox);
+
+            const stationName = document.createElement('p');
+            const lines = [station.LineCode1, station.LineCode2, station.LineCode3, station.LineCode4].filter(code => code);
+            stationName.textContent = station.Name + " - " + lines.join(', ');
+            stationCard.appendChild(stationName);
+
+            document.querySelector('#station-list').appendChild(stationCard);
+        }
+    } else {
+        console.log("Failed to fetch and populate stations.")
+    }
+}
+
+// Get list of all stations
+async function getStations() {
+    const response = await fetch('https://api.wmata.com/Rail.svc/json/jStations', {
         method: 'GET',
         // Request headers
         headers: {
             'Cache-Control': 'no-cache',
             'api_key': api_key}
     })
+    const stations = await response.json();
     if (response.ok) {
-        return true;
+        return stations.Stations;
     }
     return false;
 }
-
-// Function to check for station code(s) in local storage, if not present prompt the user to enter them and save them to local storage for future use
-async function getStationCodes() {
-    if (localStorage.getItem('stations') !== null) {
-        stations = localStorage.getItem('stations');
-        // Initial data fetch
-        getMetroData(stations);
-    } else {
-        let promptedStations = prompt("Please enter the station code(s) you want to track (e.g., 'A01' for Metro Center, or 'all' for all stations. Multiple stations can be entered separated by commas.):");
-        if (promptedStations) {
-            stations = promptedStations;
-            const isValid = await checkStationCodes(stations);
-            if (!isValid) {
-                alert("Invalid station code(s). Please enter valid station code(s).");
-                location.reload(); 
-            } else {
-                localStorage.setItem('stations', stations);
-                // Initial data fetch
-                getMetroData(stations);
-            }
-        } else {
-            alert("No station code(s) entered. Please enter valid station code(s).");
-            location.reload(); 
-        }
-    }
-
-}    
 
 // Function to check if the provided API key is valid by making a test request to the WMATA API
 async function checkAPI(api_key) {
@@ -71,29 +173,29 @@ async function checkAPI(api_key) {
     return false;
 }
 
-// Check for API key and station code(s) in local storage, if not present prompt the user to enter them and save them to local storage for future use
+// Function to check if the provided station code(s) are valid by making a test request to the WMATA API
+async function checkStationCodes(stationCodes) {
+    const response = await fetch(`https://api.wmata.com/StationPrediction.svc/json/GetPrediction/${stationCodes}`, {
+        method: 'GET',
+        // Request headers
+        headers: {
+            'Cache-Control': 'no-cache',
+            'api_key': api_key}
+    })
+    if (response.ok) {
+        return true;
+    }
+    return false;
+}
+
+// Check for API key and station code(s) in local storage, if not present open the settings dialog.
 async function getAPIKey() {
-    if (localStorage.getItem('api_key') !== null) {
+    if (localStorage.getItem('api_key') !== null && localStorage.getItem('stations') !== null) {
         api_key = localStorage.getItem('api_key');
-        // Get station codes from user
-        getStationCodes();
+        stations = localStorage.getItem('stations');
     } else {
-        let promptedKey = prompt("Please enter your WMATA API key:");
-        if (promptedKey) {
-            api_key = promptedKey;
-            const isValid = await checkAPI(api_key);
-            if (!isValid) {
-                alert("Invalid API key. Please enter a valid WMATA API key.");
-                location.reload(); 
-            } else {
-                localStorage.setItem('api_key', api_key);
-                // Get station codes from user
-                getStationCodes();
-            }
-        } else {
-            alert("No API key entered. Please enter a valid WMATA API key to use the Metro Tracker.");
-            location.reload(); 
-        }
+        const dialog = document.querySelector("dialog");
+        dialog.showModal();
     }
 }
 
@@ -166,32 +268,36 @@ async function getAlerts() {
     })
     const data = await response.json();
     for (let alert of data.Incidents) {
-        // Set the limit to 3 to prioritize alert visibility when an alert is present, and refresh the arrival data to reflect the new limit
-        limit = 3;
-        getMetroData(stations);
-        
-        // Create the warning card elements
-        const warningCard = document.createElement('div');
-        const line = document.createElement('div');
-        const destination = document.createElement('div');
+        // Skip iteration if the incident lines not in lines
+        if (lines?.some(line => linesAffected?.includes(line))) {
 
-        // Set the classes of the elements
-        warningCard.classList.add('warning', 'card');
-        line.classList.add('line', 'alert');
-        destination.classList.add('warning-text');
+            // Set the limit to 3 to prioritize alert visibility when an alert is present, and refresh the arrival data to reflect the new limit
+            limit = 3;
+            getMetroData(stations);
+            
+            // Create the warning card elements
+            const warningCard = document.createElement('div');
+            const line = document.createElement('div');
+            const destination = document.createElement('div');
 
-        // Set the content of the elements
-        destination.textContent = alert.Description;
+            // Set the classes of the elements
+            warningCard.classList.add('warning', 'card');
+            line.classList.add('line', 'alert');
+            destination.classList.add('warning-text');
 
-        // Append the elements to the warning card
-        warningCard.appendChild(line);
-        warningCard.appendChild(destination);
+            // Set the content of the elements
+            destination.textContent = alert.Description;
 
-        // Append the warning card to the container
-        document.querySelector('.warning-cards').appendChild(warningCard);
+            // Append the elements to the warning card
+            warningCard.appendChild(line);
+            warningCard.appendChild(destination);
 
-        await sleep(15000);
-        document.querySelector('.warning-cards').replaceChildren();
+            // Append the warning card to the container
+            document.querySelector('.warning-cards').appendChild(warningCard);
+
+            await sleep(15000);
+            document.querySelector('.warning-cards').replaceChildren();
+        }
     }
 
     // Set the limit back after processing alerts and refresh the arrival data to reflect the new limit
@@ -201,6 +307,7 @@ async function getAlerts() {
 
 // Initial function call to get the API key and station code(s) from the user and start fetching data
 getAPIKey();
+getAlerts();
 
 // Refresh the train data every 15 seconds and pull the alert data every 3 minutes
 const trainRefreshInterval = setInterval(() => getMetroData(stations), 15000);
