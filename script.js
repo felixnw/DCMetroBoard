@@ -27,18 +27,23 @@ const apiBtn = document.querySelector('#save-api');
 apiBtn.addEventListener('click', async () => {
     let apiCheck;
     let api_key = document.getElementById("api-key").value;
-    try {
-        apiCheck = await checkAPI(api_key);
-    } catch (error) {
-        console.error('Error calling API Key verification.');
-    }
 
-    if (apiCheck) {
-        localStorage.setItem('api_key', api_key);
-        populateStationList(document.getElementById("search").value);
+    if (api_key){
+        try {
+            apiCheck = await checkAPI(api_key);
+        } catch (error) {
+            console.error('Error calling API Key verification.');
+        }
 
+        if (apiCheck) {
+            localStorage.setItem('api_key', api_key);
+            populateStationList(document.getElementById("search").value);
+
+        } else {
+            alert("Invalid API key entered. Please enter a valid WMATA API key to use the Metro Tracker.");
+        }
     } else {
-        alert("Invalid API key entered. Please enter a valid WMATA API key to use the Metro Tracker.");
+        alert("No API key entered. Please enter a valid WMATA API key to use the Metro Tracker.");
     }
 });
 
@@ -116,6 +121,7 @@ async function populateStationList(filter) {
 
     if (allStations) {
         document.querySelector('#station-list').replaceChildren();
+        document.querySelector('#selected-stations').replaceChildren();
         if (filter) {
             filteredStations = allStations.filter(station => station.Name.toLowerCase().includes(filter.toLowerCase()));
         } else {
@@ -137,7 +143,7 @@ async function populateStationList(filter) {
         }
         localStorage.setItem('lines', selectedLines)
         selectedList.textContent = "Selected Stations: " + selectedName.join(', ');
-        document.querySelector('#station-list').appendChild(selectedList);
+        document.querySelector('#selected-stations').appendChild(selectedList);
 
         for (let station of filteredStations) {
 
@@ -153,6 +159,7 @@ async function populateStationList(filter) {
             stationCard.appendChild(stationCheckbox);
 
             const stationName = document.createElement('p');
+            stationName.classList.add('station-name');
             const lines = [station.LineCode1, station.LineCode2, station.LineCode3, station.LineCode4].filter(code => code);
             stationName.textContent = station.Name + " - " + lines.join(', ');
             stationCard.appendChild(stationName);
@@ -247,7 +254,7 @@ async function getMetroData(stationCode) {
             } else {
                 destination.textContent = train.Destination;
             }
-            // destination.textContent = train.Destination;
+
             car.textContent = train.Car;
             arrivalTime.textContent = train.Min;
 
@@ -312,7 +319,11 @@ async function getAlerts() {
     }
 
     // Set the limit back after processing alerts and refresh the arrival data to reflect the new limit
-    limit = 4;
+    if (localStorage.getItem('limit')) {
+        limit = localStorage.getItem('limit');
+    } else {
+        limit = 4;
+    }
     getMetroData(localStorage.getItem('stations'));
 }
 

@@ -203,3 +203,15 @@ html, body {
     margin-top: .25em; 
     margin-left: .72em;
 }
+
+.station-name {
+    display: inline-block;
+}
+
+#settings {
+    max-width: 33%;
+}
+
+dialog::backdrop {
+  backdrop-filter: blur(8px);
+}
