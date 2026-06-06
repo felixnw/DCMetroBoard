@@ -141,7 +141,7 @@ async function populateStationList(filter) {
             match?.LineCode3 != null && selectedLines.push(match?.LineCode3);
             match?.LineCode4 != null && selectedLines.push(match?.LineCode4);
         }
-        localStorage.setItem('lines', selectedLines)
+        localStorage.setItem('lines', JSON.stringify(selectedLines))
         selectedList.textContent = "Selected Stations: " + selectedName.join(', ');
         document.querySelector('#selected-stations').appendChild(selectedList);
 
@@ -285,9 +285,12 @@ async function getAlerts() {
             'api_key': localStorage.getItem('api_key')}
     })
     const data = await response.json();
+    const storedLines = JSON.parse(localStorage.getItem('lines') || '[]');
+
     for (let alert of data.Incidents) {
         // Skip iteration if the incident lines not in lines
-        if (lines?.some(line => linesAffected?.includes(line))) {
+        if (storedLines?.some(line => alert.LinesAffected?.includes(line))) {
+            console.log("hi");
 
             // Set the limit to 3 to prioritize alert visibility when an alert is present, and refresh the arrival data to reflect the new limit
             limit = 3;
