@@ -4,6 +4,9 @@ let limit = 4;
 // Variable to hold list of all the stations
 let allStations;
 
+// Variable to hold list of destinations
+let destinations;
+
 // Variables to hold refresh interval IDs
 let trainRefreshInterval;
 let alertRefreshInterval;
@@ -148,6 +151,15 @@ async function populateStationList(filter) {
         allStations.sort((a, b) => a.Name.localeCompare(b.Name));
     }
 
+    if (!destinations) {
+        try {
+            destinations = await getDestinations();
+        } catch (error) {
+            console.error('Failed to get destinations.', error);
+        }
+    }
+    
+
     if (allStations) {
         document.querySelector('#station-list').replaceChildren();
         document.querySelector('#selected-stations').replaceChildren();
@@ -220,7 +232,7 @@ async function populateStationList(filter) {
                 groupSelector1.id = 'group-selector-1-' + station.Code;
                 const groupLabel1 = document.createElement('label');
                 groupLabel1.htmlFor = "group-selector-1-" + station.Code;
-                groupLabel1.textContent = "1";
+                groupLabel1.textContent = destinations[station.LineCode1][1];
 
                 const groupSelector2 = document.createElement('input');
                 groupSelector2.type = 'radio';
@@ -229,7 +241,7 @@ async function populateStationList(filter) {
                 groupSelector2.id = 'group-selector-2-' + station.Code;
                 const groupLabel2 = document.createElement('label');
                 groupLabel2.htmlFor = "group-selector-2-" + station.Code;
-                groupLabel2.textContent = "2";
+                groupLabel2.textContent = destinations[station.LineCode1][2];
 
                 stationGroup.appendChild(groupText);
                 stationGroup.appendChild(groupSelector3);
@@ -261,6 +273,16 @@ async function getStations() {
     const stations = await response.json();
     if (response.ok) {
         return stations.Stations;
+    }
+    return false;
+}
+
+// Get list of destinations
+async function getDestinations() {
+    const response = await fetch('groupDestinations.json')
+    const destinations = await response.json();
+    if (response.ok) {
+        return destinations;
     }
     return false;
 }
