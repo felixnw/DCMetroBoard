@@ -12,4 +12,3 @@ Clicking the "M" logo in the top left corner resets the API Key and Station code
 - Style settings screen
 - Pull out all API calls into their own functions, and group together
 - Consider whether to sentence case destination if in all caps
-- Add clear stations button

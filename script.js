@@ -99,8 +99,21 @@ clearStorageBtn.addEventListener('click', () => {
     let confirmation = confirm('Are you sure you want to reset all settings?');
     if (confirmation) {
         localStorage.clear();
-        alert("Local storage cleared. Please reenter your API key and station code(s).");
+        alert("Local storage cleared. Please reenter your API key and stations selections.");
         location.reload(); 
+    }
+});
+
+// On click, clear selected stations
+const clearStationsBtn = document.querySelector('#clear-stations');
+clearStationsBtn.addEventListener('click', () => {
+    let stationsConfirmation = confirm('Are you sure you want to delete selected stations?');
+    if (stationsConfirmation) {
+        localStorage.removeItem('stations');
+        localStorage.removeItem('groups');
+        localStorage.removeItem('lines');
+        alert("Selected stations cleared. Please select stations.");
+        location.reload();
     }
 });
 
@@ -479,5 +492,10 @@ if (localStorage.getItem('api_key') && localStorage.getItem('stations')) {
     startApp();
 } else {
     const dialog = document.querySelector("dialog");
+    document.getElementById("api-key").value = localStorage.getItem('api_key');
+    document.getElementById('time-buffer').value = localStorage.getItem('timeBuffer');
+    if (document.getElementById("api-key").value) {
+        populateStationList();
+    }
     dialog.showModal();
 }
