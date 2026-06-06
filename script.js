@@ -109,11 +109,8 @@ stationList.addEventListener('change', function(event) {
             populateStationList(document.getElementById("search").value);
 
             // Add to groups array
-            groups = JSON.parse(localStorage.getItem('groups') || '[]');
-            groups.push({ 
-                station: event.target.value, 
-                group: document.querySelector(`input[name="group${event.target.value}"]:checked`)?.value || ''
-            });
+            groups = JSON.parse(localStorage.getItem('groups') || '{}');
+            groups[event.target.value] = document.querySelector(`input[name="group${event.target.value}"]:checked`)?.value || '3';
             localStorage.setItem('groups', JSON.stringify(groups));
             
         } else {
@@ -123,18 +120,16 @@ stationList.addEventListener('change', function(event) {
             populateStationList(document.getElementById("search").value);
 
             // Remove from groups array
-            groups = JSON.parse(localStorage.getItem('groups') || '[]');
-            groups = groups.filter(item => item.station !== event.target.value);
+            groups = JSON.parse(localStorage.getItem('groups') || '{}');
+            delete groups[event.target.value];
             localStorage.setItem('groups', JSON.stringify(groups));
         }
     }
 
     // If a station group selection is changed, updated the selection
     if (event.target.type == 'radio') {
-        console.log(event.target.name);
         groups = JSON.parse(localStorage.getItem('groups'));
-        const targetStation = groups.find(station => station.station === event.target.name.slice(-3));
-        targetStation.group = event.target.value;
+        groups[event.target.name.slice(-3)] = event.target.value;
         localStorage.setItem('groups', JSON.stringify(groups));
     }
 
@@ -218,8 +213,7 @@ async function populateStationList(filter) {
                 const groupSelector3 = document.createElement('input');
                 groupSelector3.type = 'radio';
                 groupSelector3.name = 'group-' + station.Code;
-                groupSelector3.value = '';
-                groupSelector3.checked = 'true';
+                groupSelector3.value = '3';
                 groupSelector3.id = 'group-selector-3-' + station.Code;
                 const groupLabel3 = document.createElement('label');
                 groupLabel3.htmlFor = "group-selector-3-" + station.Code;
@@ -242,6 +236,20 @@ async function populateStationList(filter) {
                 const groupLabel2 = document.createElement('label');
                 groupLabel2.htmlFor = "group-selector-2-" + station.Code;
                 groupLabel2.textContent = destinations[station.LineCode1][2];
+
+                // Select currrent selection if applicable, else select default of both
+                const selectedGroup = JSON.parse(localStorage.getItem('groups'))?.[station.Code] ?? null;
+                switch(selectedGroup) {
+                    case '1':
+                        groupSelector1.checked = true;
+                        break;
+                    case '2':
+                        groupSelector2.checked = true;
+                        break;
+                    default:
+                        groupSelector3.checked = true;
+                        break;
+                }
 
                 stationGroup.appendChild(groupText);
                 stationGroup.appendChild(groupSelector3);
@@ -331,44 +339,53 @@ async function getMetroData(stationCode) {
     })
     .then(data => {
         document.querySelector('.arrival-cards').replaceChildren();
-        for (let train of data.Trains.slice(0, limit)) {
+        let countDown = limit;
+        for (let train of data.Trains) {
+            if (countDown > 0) {
+                let savedGroup = JSON.parse(localStorage.getItem('groups'))[train.LocationCode];
+                if ( savedGroup === '3' || savedGroup === train.Group ) {
+                    // Create the arrival card elements
+                    const arrivalCard = document.createElement('div');
+                    const line = document.createElement('div');
+                    const destination = document.createElement('div');
+                    const car = document.createElement('div');
+                    const arrivalTime = document.createElement('div');
 
-            // Create the arrival card elements
-            const arrivalCard = document.createElement('div');
-            const line = document.createElement('div');
-            const destination = document.createElement('div');
-            const car = document.createElement('div');
-            const arrivalTime = document.createElement('div');
+                    // Set the classes of the elements
+                    arrivalCard.classList.add('arrival', 'card');
+                    line.classList.add(`${train.Line.toLowerCase()}`, 'line');
+                    destination.classList.add('destination');
+                    car.classList.add('car');
+                    arrivalTime.classList.add('arrival-time');
+                    
 
-            // Set the classes of the elements
-            arrivalCard.classList.add('arrival', 'card');
-            line.classList.add(`${train.Line.toLowerCase()}`, 'line');
-            destination.classList.add('destination');
-            car.classList.add('car');
-            arrivalTime.classList.add('arrival-time');
-            
+                    // Set the content of the elements
+                    if (train.Destination === 'ssenger') {
+                        destination.textContent = train.DestinationName;
+                    } else {
+                        destination.textContent = train.Destination;
+                    }
 
-            // Set the content of the elements
-            if (train.Destination === 'ssenger') {
-                destination.textContent = train.DestinationName;
+                    car.textContent = train.Car;
+                    arrivalTime.textContent = train.Min;
+
+                    // Append the elements to the arrival card
+                    arrivalCard.appendChild(line);
+                    arrivalCard.appendChild(destination);
+                    arrivalCard.appendChild(car);
+                    arrivalCard.appendChild(arrivalTime);
+                    if (train.Min !== 'ARR' && train.Min !== 'BRD') {
+                        arrivalTime.classList.add('min');
+                    }
+
+                    // Append the arrival card to the container
+                    document.querySelector('.arrival-cards').appendChild(arrivalCard);
+
+                    countDown--;
+                }
             } else {
-                destination.textContent = train.Destination;
+                break;
             }
-
-            car.textContent = train.Car;
-            arrivalTime.textContent = train.Min;
-
-            // Append the elements to the arrival card
-            arrivalCard.appendChild(line);
-            arrivalCard.appendChild(destination);
-            arrivalCard.appendChild(car);
-            arrivalCard.appendChild(arrivalTime);
-            if (train.Min !== 'ARR' && train.Min !== 'BRD') {
-                arrivalTime.classList.add('min');
-            }
-
-            // Append the arrival card to the container
-            document.querySelector('.arrival-cards').appendChild(arrivalCard);
         }
         return data;
     })
@@ -435,12 +452,10 @@ function startApp(){
     clearInterval(alertRefreshInterval);
     // Initial function call to get the API key and station code(s) from the user and start fetching data
     getMetroData(localStorage.getItem('stations'));
-    getAlerts();
     // Refresh the train data every 15 seconds and pull the alert data every 3 minutes
     trainRefreshInterval = setInterval(() => getMetroData(localStorage.getItem('stations')), 15000);
     alertRefreshInterval = setInterval(() => getAlerts(), 180000);
 }
-
 
 if (localStorage.getItem('api_key') && localStorage.getItem('stations')) {
     startApp();

@@ -7,10 +7,9 @@ It requires the user to input an API key and station code(s), which then gets st
 Clicking the "M" logo in the top left corner resets the API Key and Station code entries and allows the user to reenter them.
 
 ### Future Enhancements:
-- Allow user to select stations via search and picklists
 - Allow user to set max number of trains displayed
 - Allow user to set minimum minutes
 - Set sleep hours
-- Take LinesAffected into account when showing alerts - done, need to test
-- Group handling - create array of stationcode and group preference (default is both). Allow choice on this with radio buttons that show up when a station is checked. During loop, check what user selected and only build HTML if equal. Remember to add to / remove from array when add/remove station. - we get this from user, and set array. need to now add in logic to filter based on this.
-- Group description improvement - maybe manual array of what group is what for which line?
+- Style settings screen
+- Pull out all API calls into their own functions, and group together
+- Consider whether to sentence case destination if in all caps
