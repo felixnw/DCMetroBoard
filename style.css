@@ -83,7 +83,7 @@ html, body {
 }
 
 #station-list {
-    max-height: 50vh;
+    max-height: 30vh;
     overflow: scroll;
 }
 
@@ -209,7 +209,9 @@ html, body {
 }
 
 #settings {
-    max-width: 33%;
+    max-width: 50%;
+    max-height: 100%;
+    overflow: scroll;
 }
 
 dialog::backdrop {

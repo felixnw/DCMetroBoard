@@ -29,20 +29,30 @@
     </div>
 
     <dialog id="settings">
-        <h2>Settings</h2>
-        <p>A <a href="https://developer.wmata.com/">WMATA API key</a> is required for this application to receive live train data.</p>
-        <form>
+        <h1>Settings</h1>
+        <div>
+            <h2>API Key</h2>
+            <p>A <a href="https://developer.wmata.com/">WMATA API key</a> is required for this application to receive live train data.</p>
             <label for="api-key">API Key:</label>
-            <input type="text" id="api-key" name="api-key" autocomplete="off" placeholder="Enter your WMATA API key">
+            <input type="text" id="api-key" name="api-key" autocomplete="off" placeholder="Your WMATA API key">
             <button type="button" id="save-api">Save API Key</button>   
-        </form>
-        <h3>Stations</h3>
-        <p>Select one or more stations to view upcoming trains for. </br>Note that some stations have two options, depending on lines.</p>
-        <label for="search">Station Search:</label>
-        <input type="text" id="search" name="search" placeholder="Search by Station Name">
-        <div id="selected-stations"></div>
-        <div id="station-list"></div>
-        <button id="clear-storage">Clear Stored Data</button>
+        </div>
+        <div>
+            <h2>Time Buffer</h2>
+            <p>Optionally hide trains that are arriving sooner than a given number of minutes. </br> Note that there may not be estimates for trains too far out.</p>
+            <label for="time-buffer">Hide trains arriving sooner than:</label>
+            <input id="time-buffer" name="time-buffer" type="number" min="0" max="100" step="1" placeholder="Min">
+            <span>min</span>
+        </div>
+        <div>
+            <h2>Stations</h2>
+            <p>Select one or more stations to view upcoming trains for. </br>Note that some stations have two options, depending on lines.</p>
+            <label for="search">Station Search:</label>
+            <input type="text" id="search" name="search" placeholder="Search by Station Name">
+            <div id="selected-stations"></div>
+            <div id="station-list"></div>
+        </div>
+        <button id="clear-storage">Clear All Stored Data</button>
         <button id="close-settings">Close</button>
     </dialog>
     <script src="script.js"></script>

@@ -16,12 +16,13 @@ function sleep(ms) {
   return new Promise(resolve => setTimeout(resolve, ms));
 }
 
-// Add click event listener to the logo to clear local storage and prompt the user to refresh the page and enter their API key and station code(s) again
+// Add click event listener to the logo to open settings modal
 const logo = document.querySelector('.metro-logo');
 logo.addEventListener('click', () => {
     const dialog = document.querySelector("dialog");
     dialog.showModal();
     document.getElementById("api-key").value = localStorage.getItem('api_key');
+    document.getElementById('time-buffer').value = localStorage.getItem('timeBuffer');
     populateStationList();
 });
 
@@ -30,7 +31,6 @@ const apiBtn = document.querySelector('#save-api');
 apiBtn.addEventListener('click', async () => {
     let apiCheck;
     let api_key = document.getElementById("api-key").value;
-
     if (api_key){
         try {
             apiCheck = await checkAPI(api_key);
@@ -54,14 +54,21 @@ apiBtn.addEventListener('click', async () => {
 const closeModalBtn = document.querySelector('#close-settings');
 closeModalBtn.addEventListener('click', async () => {
     let apiCheck;
-    try {
-        apiCheck = await checkAPI(localStorage.getItem('api_key'));
-    } catch (error) {
-        console.error('Error calling API Key verification.');
-    }
+    let api_key = document.getElementById("api-key").value;
+    if (api_key) {
+        try {
+            apiCheck = await checkAPI(localStorage.getItem('api_key'));
+        } catch (error) {
+            console.error('Error calling API Key verification.');
+        }
 
-    if (!apiCheck) {
-        alert("Invalid API key entered. Please enter a valid WMATA API key to use the Metro Tracker.");
+        if (!apiCheck) {
+            alert("Invalid API key entered. Please enter a valid WMATA API key to use the Metro Tracker.");
+            return;
+        }
+    }
+    else {
+        alert("No API key entered. Please enter a valid WMATA API key to use the Metro Tracker.");
         return;
     }
 
@@ -80,14 +87,21 @@ closeModalBtn.addEventListener('click', async () => {
     } else {
         alert("No stations selected. Please select at least one station.");
     }
+
+    // Save timeBuffer value
+    const timeBuffer = document.getElementById('time-buffer').value;
+    localStorage.setItem('timeBuffer', timeBuffer)
 });
 
 // On click, clear local storage
 const clearStorageBtn = document.querySelector('#clear-storage');
 clearStorageBtn.addEventListener('click', () => {
-    localStorage.clear();
-    alert("Local storage cleared. Please reenter your API key and station code(s).");
-    location.reload(); 
+    let confirmation = confirm('Are you sure you want to reset all settings?');
+    if (confirmation) {
+        localStorage.clear();
+        alert("Local storage cleared. Please reenter your API key and station code(s).");
+        location.reload(); 
+    }
 });
 
 // Event handler for station search box
@@ -169,7 +183,7 @@ async function populateStationList(filter) {
         let selectedName = [];
         let selectedLines = [];
         for (let selectedStation of localStorage.getItem('stations')?.split(",") ?? []) {
-            const match = filteredStations.find(item => item.Code === selectedStation);
+            const match = allStations.find(item => item.Code === selectedStation);
             selectedName.push(match?.Name);
             // Get each lineCode and add it to the array if not null
             match?.LineCode1 != null && selectedLines.push(match?.LineCode1);
@@ -343,45 +357,49 @@ async function getMetroData(stationCode) {
         for (let train of data.Trains) {
             if (countDown > 0) {
                 let savedGroup = JSON.parse(localStorage.getItem('groups'))[train.LocationCode];
+                let savedBuffer = parseInt(localStorage.getItem('timeBuffer'), 10);
                 if ( savedGroup === '3' || savedGroup === train.Group ) {
-                    // Create the arrival card elements
-                    const arrivalCard = document.createElement('div');
-                    const line = document.createElement('div');
-                    const destination = document.createElement('div');
-                    const car = document.createElement('div');
-                    const arrivalTime = document.createElement('div');
+                    if (Number.isNaN(savedBuffer) || savedBuffer == 0 || savedBuffer < 0 || parseInt(train.Min) >= savedBuffer) {
 
-                    // Set the classes of the elements
-                    arrivalCard.classList.add('arrival', 'card');
-                    line.classList.add(`${train.Line.toLowerCase()}`, 'line');
-                    destination.classList.add('destination');
-                    car.classList.add('car');
-                    arrivalTime.classList.add('arrival-time');
-                    
+                        // Create the arrival card elements
+                        const arrivalCard = document.createElement('div');
+                        const line = document.createElement('div');
+                        const destination = document.createElement('div');
+                        const car = document.createElement('div');
+                        const arrivalTime = document.createElement('div');
 
-                    // Set the content of the elements
-                    if (train.Destination === 'ssenger') {
-                        destination.textContent = train.DestinationName;
-                    } else {
-                        destination.textContent = train.Destination;
+                        // Set the classes of the elements
+                        arrivalCard.classList.add('arrival', 'card');
+                        line.classList.add(`${train.Line.toLowerCase()}`, 'line');
+                        destination.classList.add('destination');
+                        car.classList.add('car');
+                        arrivalTime.classList.add('arrival-time');
+                        
+
+                        // Set the content of the elements
+                        if (train.Destination === 'ssenger') {
+                            destination.textContent = train.DestinationName;
+                        } else {
+                            destination.textContent = train.Destination;
+                        }
+
+                        car.textContent = train.Car;
+                        arrivalTime.textContent = train.Min;
+
+                        // Append the elements to the arrival card
+                        arrivalCard.appendChild(line);
+                        arrivalCard.appendChild(destination);
+                        arrivalCard.appendChild(car);
+                        arrivalCard.appendChild(arrivalTime);
+                        if (train.Min !== 'ARR' && train.Min !== 'BRD') {
+                            arrivalTime.classList.add('min');
+                        }
+
+                        // Append the arrival card to the container
+                        document.querySelector('.arrival-cards').appendChild(arrivalCard);
+
+                        countDown--;
                     }
-
-                    car.textContent = train.Car;
-                    arrivalTime.textContent = train.Min;
-
-                    // Append the elements to the arrival card
-                    arrivalCard.appendChild(line);
-                    arrivalCard.appendChild(destination);
-                    arrivalCard.appendChild(car);
-                    arrivalCard.appendChild(arrivalTime);
-                    if (train.Min !== 'ARR' && train.Min !== 'BRD') {
-                        arrivalTime.classList.add('min');
-                    }
-
-                    // Append the arrival card to the container
-                    document.querySelector('.arrival-cards').appendChild(arrivalCard);
-
-                    countDown--;
                 }
             } else {
                 break;

@@ -8,8 +8,8 @@ Clicking the "M" logo in the top left corner resets the API Key and Station code
 
 ### Future Enhancements:
 - Allow user to set max number of trains displayed
-- Allow user to set minimum minutes
 - Set sleep hours
 - Style settings screen
 - Pull out all API calls into their own functions, and group together
 - Consider whether to sentence case destination if in all caps
+- Add clear stations button
