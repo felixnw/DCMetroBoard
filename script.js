@@ -96,16 +96,45 @@ searchBox.addEventListener('input', (event) => {
 // Event handler to show list of selected stations in settings
 const stationList = document.querySelector('#station-list');
 stationList.addEventListener('change', function(event) {
-    if (event.target.checked) {
-        let selectedStations = localStorage.getItem('stations')?.split(",") ?? [];
-        selectedStations.push(event.target.value);
-        localStorage.setItem('stations', selectedStations.toString().replace(/^,/, ''));
-        populateStationList(document.getElementById("search").value);
-    } else {
-        const selectedStations = localStorage.getItem('stations').split(",").filter(item => item !== event.target.value);
-        localStorage.setItem('stations', selectedStations.join(','));
-        populateStationList(document.getElementById("search").value);
+    // If a station checkbox is change, add or remove it from the selected stations list
+    if (event.target.type == 'checkbox') {
+        if (event.target.checked) {
+            // Add to list of selected stations
+            let selectedStations = localStorage.getItem('stations')?.split(",") ?? [];
+            selectedStations.push(event.target.value);
+            localStorage.setItem('stations', selectedStations.toString().replace(/^,/, ''));
+            populateStationList(document.getElementById("search").value);
+
+            // Add to groups array
+            groups = JSON.parse(localStorage.getItem('groups') || '[]');
+            groups.push({ 
+                station: event.target.value, 
+                group: document.querySelector(`input[name="group${event.target.value}"]:checked`)?.value || ''
+            });
+            localStorage.setItem('groups', JSON.stringify(groups));
+            
+        } else {
+            // Remove from list of selected stations
+            const selectedStations = localStorage.getItem('stations').split(",").filter(item => item !== event.target.value);
+            localStorage.setItem('stations', selectedStations.join(','));
+            populateStationList(document.getElementById("search").value);
+
+            // Remove from groups array
+            groups = JSON.parse(localStorage.getItem('groups') || '[]');
+            groups = groups.filter(item => item.station !== event.target.value);
+            localStorage.setItem('groups', JSON.stringify(groups));
+        }
     }
+
+    // If a station group selection is changed, updated the selection
+    if (event.target.type == 'radio') {
+        console.log(event.target.name);
+        groups = JSON.parse(localStorage.getItem('groups'));
+        const targetStation = groups.find(station => station.station === event.target.name.slice(-3));
+        targetStation.group = event.target.value;
+        localStorage.setItem('groups', JSON.stringify(groups));
+    }
+
 });
 
 async function populateStationList(filter) {
@@ -141,7 +170,7 @@ async function populateStationList(filter) {
             match?.LineCode3 != null && selectedLines.push(match?.LineCode3);
             match?.LineCode4 != null && selectedLines.push(match?.LineCode4);
         }
-        localStorage.setItem('lines', JSON.stringify(selectedLines))
+        localStorage.setItem('lines', JSON.stringify(selectedLines));
         selectedList.textContent = "Selected Stations: " + selectedName.join(', ');
         document.querySelector('#selected-stations').appendChild(selectedList);
 
@@ -149,6 +178,7 @@ async function populateStationList(filter) {
 
             const stationCard = document.createElement('div');
             stationCard.classList.add('station-card');
+            stationCard.id = station.Code;
 
             const stationCheckbox = document.createElement('input');
             stationCheckbox.type = "checkbox";
@@ -164,10 +194,58 @@ async function populateStationList(filter) {
             stationName.textContent = station.Name + " - " + lines.join(', ');
             stationCard.appendChild(stationName);
 
+            if (localStorage.getItem('stations')?.includes(station.Code)) {
+                // Add group selector under station
+                const stationGroup = document.createElement('fieldset');
+                stationGroup.classList.add('station-group');
+                stationGroup.id = 'station-group-' + station.Code;
+                const groupText = document.createElement('legend');
+                groupText.classList.add('group-text');
+                groupText.textContent = "Select which train direction for this station:"
+
+                const groupSelector3 = document.createElement('input');
+                groupSelector3.type = 'radio';
+                groupSelector3.name = 'group-' + station.Code;
+                groupSelector3.value = '';
+                groupSelector3.checked = 'true';
+                groupSelector3.id = 'group-selector-3-' + station.Code;
+                const groupLabel3 = document.createElement('label');
+                groupLabel3.htmlFor = "group-selector-3-" + station.Code;
+                groupLabel3.textContent = "Both";
+
+                const groupSelector1 = document.createElement('input');
+                groupSelector1.type = 'radio';
+                groupSelector1.name = 'group-' + station.Code;
+                groupSelector1.value = '1';
+                groupSelector1.id = 'group-selector-1-' + station.Code;
+                const groupLabel1 = document.createElement('label');
+                groupLabel1.htmlFor = "group-selector-1-" + station.Code;
+                groupLabel1.textContent = "1";
+
+                const groupSelector2 = document.createElement('input');
+                groupSelector2.type = 'radio';
+                groupSelector2.name = 'group-' + station.Code;
+                groupSelector2.value = '2';
+                groupSelector2.id = 'group-selector-2-' + station.Code;
+                const groupLabel2 = document.createElement('label');
+                groupLabel2.htmlFor = "group-selector-2-" + station.Code;
+                groupLabel2.textContent = "2";
+
+                stationGroup.appendChild(groupText);
+                stationGroup.appendChild(groupSelector3);
+                stationGroup.appendChild(groupLabel3);
+                stationGroup.appendChild(groupSelector1);
+                stationGroup.appendChild(groupLabel1);
+                stationGroup.appendChild(groupSelector2);
+                stationGroup.appendChild(groupLabel2);
+
+                stationCard.appendChild(stationGroup);
+            }
+
             document.querySelector('#station-list').appendChild(stationCard);
         }
     } else {
-        console.log("Failed to fetch and populate stations.")
+        console.error("Failed to fetch and populate stations.")
     }
 }
 
@@ -290,7 +368,6 @@ async function getAlerts() {
     for (let alert of data.Incidents) {
         // Skip iteration if the incident lines not in lines
         if (storedLines?.some(line => alert.LinesAffected?.includes(line))) {
-            console.log("hi");
 
             // Set the limit to 3 to prioritize alert visibility when an alert is present, and refresh the arrival data to reflect the new limit
             limit = 3;

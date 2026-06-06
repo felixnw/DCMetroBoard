@@ -12,4 +12,5 @@ Clicking the "M" logo in the top left corner resets the API Key and Station code
 - Allow user to set minimum minutes
 - Set sleep hours
 - Take LinesAffected into account when showing alerts - done, need to test
-- Group handling - create array of stationcode and group preference (default is both). Allow choice on this with radio buttons that show up when a station is checked. During loop, check what user selected and only build HTML if equal. Remember to add to / remove from array when add/remove station.
+- Group handling - create array of stationcode and group preference (default is both). Allow choice on this with radio buttons that show up when a station is checked. During loop, check what user selected and only build HTML if equal. Remember to add to / remove from array when add/remove station. - we get this from user, and set array. need to now add in logic to filter based on this.
+- Group description improvement - maybe manual array of what group is what for which line?
