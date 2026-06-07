@@ -209,9 +209,14 @@ html, body {
 }
 
 #settings {
-    max-width: 50%;
+    max-width: 75%;
     max-height: 100%;
     overflow: scroll;
+}
+
+.main-settings {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
 }
 
 dialog::backdrop {
