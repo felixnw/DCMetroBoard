@@ -40,6 +40,7 @@ apiBtn.addEventListener('click', async () => {
 
         if (apiCheck) {
             localStorage.setItem('api_key', api_key);
+            document.getElementById("station-selection").style.display = "block";
             populateStationList(document.getElementById("search").value);
 
         } else {
@@ -57,12 +58,16 @@ closeModalBtn.addEventListener('click', async () => {
     let api_key = document.getElementById("api-key").value;
     if (api_key) {
         try {
-            apiCheck = await checkAPI(localStorage.getItem('api_key'));
+            apiCheck = await checkAPI(api_key);
         } catch (error) {
             console.error('Error calling API Key verification.');
         }
 
-        if (!apiCheck) {
+        if (apiCheck) {
+            localStorage.setItem('api_key', api_key);
+            document.getElementById("station-selection").style.display = "block";
+            populateStationList(document.getElementById("search").value);
+        } else {
             alert("Invalid API key entered. Please enter a valid WMATA API key to use the Metro Tracker.");
             return;
         }
@@ -496,6 +501,8 @@ if (localStorage.getItem('api_key') && localStorage.getItem('stations')) {
     document.getElementById('time-buffer').value = localStorage.getItem('timeBuffer');
     if (document.getElementById("api-key").value) {
         populateStationList();
+    } else {
+        document.getElementById("station-selection").style.display = "none";
     }
     dialog.showModal();
 }
