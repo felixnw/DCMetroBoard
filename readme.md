@@ -7,8 +7,6 @@ It requires the user to input an API key and station code(s), which then gets st
 Clicking the "M" logo in the top left corner resets the API Key and Station code entries and allows the user to reenter them.
 
 ### Future Enhancements:
-- Allow user to set max number of trains displayed
 - Set sleep hours
 - Style settings screen
 - Pull out all API calls into their own functions, and group together
-- Consider whether to sentence case destination if in all caps

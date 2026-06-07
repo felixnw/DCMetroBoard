@@ -16,6 +16,19 @@ function sleep(ms) {
   return new Promise(resolve => setTimeout(resolve, ms));
 }
 
+// Function to title case if all caps
+function titleCaseIfAllCaps(str) {
+  // Check if the string is in all caps
+  if (str === str.toUpperCase() && str !== str.toLowerCase()) {
+    // Convert it to title case
+    return str
+      .toLowerCase()
+      .replace(/\b\w/g, (match) => match.toUpperCase());
+  }
+  // Return the original string untouched if it wasn't all caps
+  return str;
+}
+
 // Add click event listener to the logo to open settings modal
 const logo = document.querySelector('.metro-logo');
 logo.addEventListener('click', () => {
@@ -411,7 +424,7 @@ async function getMetroData(stationCode) {
                         if (train.Destination === 'ssenger') {
                             destination.textContent = train.DestinationName;
                         } else {
-                            destination.textContent = train.Destination;
+                            destination.textContent = titleCaseIfAllCaps(train.Destination);
                         }
 
                         car.textContent = train.Car;
