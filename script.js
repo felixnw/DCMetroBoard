@@ -138,7 +138,7 @@ clearStorageBtn.addEventListener('click', () => {
 // On click, clear selected stations
 const clearStationsBtn = document.querySelector('#clear-stations');
 clearStationsBtn.addEventListener('click', () => {
-    let stationsConfirmation = confirm('Are you sure you want to delete selected stations?');
+    let stationsConfirmation = confirm('Are you sure you want to clear the selected stations?');
     if (stationsConfirmation) {
         localStorage.removeItem('stations');
         localStorage.removeItem('groups');

@@ -4,9 +4,8 @@ This project replicates the modern next train signs that are on the platforms wi
 
 It requires the user to input an API key and station code(s), which then gets stored in the browser cache.
 
-Clicking the "M" logo in the top left corner resets the API Key and Station code entries and allows the user to reenter them.
+Clicking the "M" logo in the top left corner enters the settings screen.
 
 ### Future Enhancements:
-- Set sleep hours
 - Style settings screen
 - Pull out all API calls into their own functions, and group together
