@@ -23,6 +23,8 @@ logo.addEventListener('click', () => {
     dialog.showModal();
     document.getElementById("api-key").value = localStorage.getItem('api_key');
     document.getElementById('time-buffer').value = localStorage.getItem('timeBuffer');
+    document.getElementById('train-quantity').value = localStorage.getItem('limit');
+    document.getElementById("search").value = "";
     populateStationList();
 });
 
@@ -95,7 +97,19 @@ closeModalBtn.addEventListener('click', async () => {
 
     // Save timeBuffer value
     const timeBuffer = document.getElementById('time-buffer').value;
-    localStorage.setItem('timeBuffer', timeBuffer)
+    localStorage.setItem('timeBuffer', timeBuffer);
+
+    // Save trainQuantity value
+    const trainQuantity = document.getElementById('train-quantity').value;
+    localStorage.setItem('limit', trainQuantity);
+
+    // Set limit to user selection
+    if (localStorage.getItem('limit')) {
+        limit = parseInt(localStorage.getItem('limit'), 10);
+    } else {
+        limit = 4;
+    }
+    
 });
 
 // On click, clear local storage
@@ -104,8 +118,7 @@ clearStorageBtn.addEventListener('click', () => {
     let confirmation = confirm('Are you sure you want to reset all settings?');
     if (confirmation) {
         localStorage.clear();
-        alert("Local storage cleared. Please reenter your API key and stations selections.");
-        location.reload(); 
+        location.reload();
     }
 });
 
@@ -371,7 +384,7 @@ async function getMetroData(stationCode) {
     })
     .then(data => {
         document.querySelector('.arrival-cards').replaceChildren();
-        let countDown = limit;
+        let countDown = limit || 4;
         for (let train of data.Trains) {
             if (countDown > 0) {
                 let savedGroup = JSON.parse(localStorage.getItem('groups'))[train.LocationCode];
@@ -475,7 +488,7 @@ async function getAlerts() {
 
     // Set the limit back after processing alerts and refresh the arrival data to reflect the new limit
     if (localStorage.getItem('limit')) {
-        limit = localStorage.getItem('limit');
+        limit = parseInt(localStorage.getItem('timeBuffer'), 10);
     } else {
         limit = 4;
     }
@@ -494,11 +507,18 @@ function startApp(){
 }
 
 if (localStorage.getItem('api_key') && localStorage.getItem('stations')) {
+    // Set limit to user selection
+    if (localStorage.getItem('limit')) {
+        limit = parseInt(localStorage.getItem('limit'), 10);
+    } else {
+        limit = 4;
+    }
     startApp();
+
 } else {
     const dialog = document.querySelector("dialog");
     document.getElementById("api-key").value = localStorage.getItem('api_key');
-    document.getElementById('time-buffer').value = localStorage.getItem('timeBuffer');
+    document.getElementById('time-buffer').value = parseInt(localStorage.getItem('timeBuffer'), 10);
     if (document.getElementById("api-key").value) {
         populateStationList();
     } else {
