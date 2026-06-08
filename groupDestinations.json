@@ -1,0 +1,26 @@
+{
+  "RD": {
+    "1": "Glenmont",
+    "2": "Shady Grove"
+  },
+  "OR": {
+    "1": "New Carrollton",
+    "2": "Vienna"
+  },
+  "YL": {
+    "1": "Greenbelt",
+    "2": "Huntington"
+  },
+  "GR": {
+    "1": "Greenbelt",
+    "2": "Branch Av"
+  },
+  "BL": {
+    "1": "Downtown Largo",
+    "2": "Franconia-Springfield"
+  },
+  "SV": {
+    "1": "Downtown Largo / New Carrollton",
+    "2": "Ashburn"
+  }
+}

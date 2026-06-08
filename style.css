@@ -198,3 +198,99 @@ html, body {
     margin-top: .25em; 
     margin-left: .72em;
 }
+
+.station-name {
+    display: inline-block;
+}
+
+#settings {
+    max-width: 90%;
+    max-height: 90%;
+    overflow: scroll;
+    background-color: rgb(21, 21, 21);
+    color: white;
+    border: none;
+    overflow-x: hidden;
+    margin-bottom: 2em;
+}
+
+.main-settings {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+}
+
+dialog::backdrop {
+  backdrop-filter: blur(8px);
+}
+
+#station-list {
+    max-height: 50vh;
+    overflow-x: hidden;
+    overflow-y: scroll;
+}
+
+.settings-card {
+    background-color: rgb(70, 70, 70);
+    padding: 10px;
+    border-radius: 3px;
+    margin: 20px;
+}
+
+.station-card {
+    background-color: rgb(45, 45, 45);
+    padding: 10px;
+    border-radius: 3px;
+    margin: 10px;
+}
+
+.settings-card a {
+    color: white;
+}
+
+.subsetting {
+    background-color: rgb(45, 45, 45);
+    padding: 10px;
+    border-radius: 3px;
+    margin: 10px;
+}
+
+.tip {
+    font-size: 0.75em;
+}
+
+button {
+    background: rgb(239, 239, 239);
+    padding: 10px;
+    border-radius: 3px;
+    margin: 10px;
+    border: none;
+    font-weight: bold;
+    font-size: 1em;
+}
+
+.red {
+    background: rgb(176, 13, 13);
+    color: white;
+}
+
+button:active {
+    background: rgb(174, 174, 174);
+}
+
+input {
+    background: rgb(239, 239, 239);
+    padding: 10px;
+    border-radius: 3px;
+    margin: 10px;
+    border: none;
+    font-weight: bold;
+    font-size: 1em;
+}
+
+.settings-buttons {
+    float: right;
+    /* position: fixed;
+    bottom: 0;
+    background-color: rgb(21, 21, 21);
+    width: 77%; */
+}
