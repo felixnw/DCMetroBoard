@@ -225,7 +225,8 @@ dialog::backdrop {
 
 #station-list {
     max-height: 50vh;
-    overflow: scroll;
+    overflow-x: hidden;
+    overflow-y: scroll;
 }
 
 .settings-card {
@@ -267,6 +268,15 @@ button {
     font-size: 1em;
 }
 
+.red {
+    background: rgb(176, 13, 13);
+    color: white;
+}
+
+button:active {
+    background: rgb(174, 174, 174);
+}
+
 input {
     background: rgb(239, 239, 239);
     padding: 10px;
@@ -278,8 +288,9 @@ input {
 }
 
 .settings-buttons {
-    position: fixed;
+    float: right;
+    /* position: fixed;
     bottom: 0;
     background-color: rgb(21, 21, 21);
-    width: 77%;
+    width: 77%; */
 }

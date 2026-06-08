@@ -29,46 +29,44 @@
     </div>
 
     <dialog id="settings">
+        <div class="settings-buttons">
+            <button class="red" id="clear-storage">Clear All Stored Data</button>
+            <button id="close-settings">Close</button>
+        </div>
         <h1>Settings</h1>
         <p>Note: Clicking the "M" logo in the top left corner enters the settings screen.</p>
         <div class="main-settings">
-            <!-- <div> -->
-                <div class="settings-card">
-                    <h2>API Key</h2>
-                    <p>A <a href="https://developer.wmata.com/">WMATA API key</a> is required for this application to receive live train data.</p>
+            <div class="settings-card">
+                <h2>API Key</h2>
+                <p>A <a href="https://developer.wmata.com/">WMATA API key</a> is required for this application to receive live train data.</p>
+                <div class="subsetting">
+                    <label for="api-key">API Key:</label>
+                    <input type="text" id="api-key" name="api-key" autocomplete="off" placeholder="Your WMATA API key">
+                    <button type="button" id="save-api">Save API Key</button>
+                </div>
+            </div>
+            <div class="settings-card">
+                <h2>Display Settings (Optional)</h2>
                     <div class="subsetting">
-                        <label for="api-key">API Key:</label>
-                        <input type="text" id="api-key" name="api-key" autocomplete="off" placeholder="Your WMATA API key">
-                        <button type="button" id="save-api">Save API Key</button>
+                        <label for="time-buffer">Hide arrivals sooner than:</label>
+                        <input id="time-buffer" name="time-buffer" type="number" min="0" max="100" step="1" placeholder="Min">
+                        <span>min</span>
                     </div>
-                </div>
-                <div class="settings-card">
-                    <h2>Display Settings (Optional)</h2>
-                        <div class="subsetting">
-                            <label for="time-buffer">Hide arrivals sooner than:</label>
-                            <input id="time-buffer" name="time-buffer" type="number" min="0" max="100" step="1" placeholder="Min">
-                            <span>min</span>
-                        </div>
-                        <div class="subsetting">
-                            <label for="train-quantity">Max number of trains shown:</label>
-                            <input id="train-quantity" name="time-buffer" type="number" min="0" max="100" step="1" placeholder="Trains">
-                        </div>
-                </div>
-                <!-- </div> -->
+                    <div class="subsetting">
+                        <label for="train-quantity">Max number of trains shown:</label>
+                        <input id="train-quantity" name="time-buffer" type="number" min="0" max="100" step="1" placeholder="Trains">
+                    </div>
+            </div>
             </div>
             <div id="station-selection" class="settings-card">
+                <button class="settings-buttons" id="clear-stations">Clear Selected Stations</button>
                 <h2>Stations</h2>
                 <p>Select one or more stations to view upcoming trains for. Note that some stations have two options, depending on lines.</p>
-                <button id="clear-stations">Clear Selected Stations</button>
                 <div id="selected-stations"></div>
                 <label for="search">Station Search:</label>
                 <input type="text" id="search" name="search" placeholder="Search by Station Name">
                 <div id="station-list"></div>
             </div>
-        </div>
-        <div class="settings-buttons">
-            <button id="clear-storage">Clear All Stored Data</button>
-            <button id="close-settings">Close</button>
         </div>
     </dialog>
     <script src="script.js"></script>
